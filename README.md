@@ -60,4 +60,4 @@ A high-performance, full-stack AI Personal Assistant application built with **Fa
 - [ ] Implement user authentication (OAuth2).
 
 ---
-*Built by [Your Name] for [Target Role]*
+*Built by [Anshuman Tripathy]*
