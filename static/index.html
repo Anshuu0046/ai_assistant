@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Magic AI Companion</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#8B5CF6',
+                        secondary: '#EC4899',
+                        accent: '#F59E0B',
+                    },
+                    borderRadius: {
+                        'xl': '1rem',
+                        '2xl': '1.5rem',
+                        '3xl': '2rem',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="h-screen flex overflow-hidden bg-gray-900 text-white selection:bg-secondary selection:text-white">
+
+    <!-- Auth Overlay -->
+    <div id="auth-overlay" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div
+            class="bg-gray-800 p-8 rounded-3xl shadow-2xl w-full max-w-md border-4 border-gray-700 animate-bounce-in relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-primary via-secondary to-accent"></div>
+
+            <div class="text-center mb-8">
+                <div
+                    class="w-20 h-20 bg-gradient-to-br from-primary to-secondary rounded-full mx-auto flex items-center justify-center mb-4 shadow-lg animate-float">
+                    <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z">
+                        </path>
+                    </svg>
+                </div>
+                <h1
+                    class="text-3xl font-bold font-display text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
+                    Magic AI</h1>
+                <p class="text-gray-400 mt-2">Your animated creative companion</p>
+            </div>
+
+            <form id="auth-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-400 mb-1 ml-1">Username</label>
+                    <input type="text" id="username" required
+                        class="w-full bg-gray-900 border-2 border-gray-700 rounded-2xl px-4 py-3 focus:outline-none focus:border-primary transition-colors text-white placeholder-gray-600"
+                        placeholder="Enter your name">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-400 mb-1 ml-1">Password</label>
+                    <input type="password" id="password" required
+                        class="w-full bg-gray-900 border-2 border-gray-700 rounded-2xl px-4 py-3 focus:outline-none focus:border-primary transition-colors text-white placeholder-gray-600"
+                        placeholder="••••••••">
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button type="submit" id="login-btn"
+                        class="flex-1 bg-primary hover:bg-violet-600 text-white font-bold py-3 px-4 rounded-2xl transition-transform hover:scale-105 active:scale-95 shadow-lg shadow-primary/30">Login</button>
+                    <button type="button" id="register-btn"
+                        class="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-4 rounded-2xl transition-transform hover:scale-105 active:scale-95">Register</button>
+                </div>
+                <p id="auth-error" class="text-red-400 text-sm text-center hidden mt-2"></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <aside class="w-80 bg-gray-800 border-r border-gray-700 flex-shrink-0 hidden md:flex flex-col z-10">
+        <div class="p-6 border-b border-gray-700 flex items-center gap-3">
+            <div
+                class="w-10 h-10 rounded-2xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-lg">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                </svg>
+            </div>
+            <div>
+                <h1 class="font-bold text-xl font-display tracking-tight">Magic AI</h1>
+                <div id="user-display" class="text-xs text-gray-400 font-medium">Guest</div>
+            </div>
+        </div>
+
+        <div class="p-4">
+            <button id="new-chat-btn"
+                class="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-4 rounded-2xl transition-all flex items-center justify-center gap-2 shadow-md border border-gray-600 hover:border-gray-500">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                New Adventure
+            </button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto px-4 space-y-2" id="chat-history">
+            <!-- Chat history items will be injected here -->
+        </div>
+
+        <!-- Settings / Persona -->
+        <div class="p-4 border-t border-gray-700 bg-gray-800/50 space-y-4">
+            <div>
+                <label class="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-2 ml-1">Companion
+                    Persona</label>
+                <div class="grid grid-cols-3 gap-2">
+                    <button
+                        class="persona-btn active p-2 rounded-xl bg-gray-700 border-2 border-primary text-2xl hover:scale-110 transition-transform"
+                        data-persona="default" title="Default">🤖</button>
+                    <button
+                        class="persona-btn p-2 rounded-xl bg-gray-700 border-2 border-transparent hover:border-gray-500 text-2xl hover:scale-110 transition-transform"
+                        data-persona="disney" title="Disney Guide">✨</button>
+                    <button
+                        class="persona-btn p-2 rounded-xl bg-gray-700 border-2 border-transparent hover:border-gray-500 text-2xl hover:scale-110 transition-transform"
+                        data-persona="pirate" title="Pirate">🏴‍☠️</button>
+                </div>
+            </div>
+
+            <div>
+                <label class="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-2 ml-1">Model
+                    Power</label>
+                <select id="model-select"
+                    class="w-full bg-gray-900 text-gray-200 text-sm rounded-xl px-3 py-2 border border-gray-700 focus:outline-none focus:border-primary appearance-none cursor-pointer">
+                    <option value="gemini-2.0-flash">Gemini 2.0 Flash ⚡</option>
+                    <option value="gemini-2.0-pro-exp">Gemini 2.0 Pro 🧠</option>
+                </select>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Chat Area -->
+    <main class="flex-1 flex flex-col relative bg-gray-900">
+        <!-- Mobile Header -->
+        <header class="md:hidden p-4 border-b border-gray-800 bg-gray-800 flex items-center justify-between">
+            <div class="font-bold font-display text-lg">Magic AI</div>
+            <button class="text-gray-400 hover:text-white">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16">
+                    </path>
+                </svg>
+            </button>
+        </header>
+
+        <!-- Chat Container -->
+        <div id="chat-container" class="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 scroll-smooth">
+            <!-- Welcome Message -->
+            <div class="flex flex-col items-center justify-center h-full text-center space-y-6 animate-bounce-in"
+                id="welcome-screen">
+                <div
+                    class="w-24 h-24 rounded-3xl bg-gray-800 flex items-center justify-center shadow-2xl shadow-primary/20 animate-float">
+                    <span class="text-5xl">✨</span>
+                </div>
+                <div>
+                    <h2 class="text-3xl font-bold text-white font-display mb-2">Ready for Magic?</h2>
+                    <p class="text-gray-400 max-w-md mx-auto">I can see images, tell stories, and help you create. Pick
+                        a persona and start chatting!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="p-4 md:p-6 bg-gray-900/90 backdrop-blur-sm border-t border-gray-800">
+            <div class="max-w-4xl mx-auto relative">
+                <!-- Image Preview -->
+                <div id="image-preview"
+                    class="hidden absolute bottom-full left-0 mb-4 p-2 bg-gray-800 rounded-2xl border border-gray-700 shadow-xl">
+                    <div class="relative">
+                        <img id="preview-img" src="" class="h-24 rounded-xl object-cover">
+                        <button id="remove-image"
+                            class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 shadow-md">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <form id="chat-form" class="relative flex gap-3 items-end">
+                    <button type="button" id="upload-btn"
+                        class="p-3.5 bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-primary rounded-2xl transition-colors border border-gray-700"
+                        title="Upload Image">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
+                            </path>
+                        </svg>
+                    </button>
+                    <input type="file" id="file-input" accept="image/*" class="hidden">
+
+                    <div class="relative flex-1">
+                        <input type="text" id="user-input"
+                            class="w-full bg-gray-800 border-2 border-gray-700 text-white rounded-2xl pl-5 pr-14 py-4 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all shadow-lg placeholder-gray-500"
+                            placeholder="Type a message..." autocomplete="off">
+                        <button type="submit"
+                            class="absolute right-2 top-1/2 -translate-y-1/2 p-2.5 bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white rounded-xl transition-all shadow-md hover:shadow-lg hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <svg class="w-5 h-5 transform rotate-90" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </form>
+                <div class="text-center text-[10px] text-gray-600 mt-3 font-medium tracking-wide uppercase">
+                    Powered by Gemini 2.0 • Magic Mode Active
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
